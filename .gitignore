@@ -11,6 +11,7 @@
 
 # Ignore folders.
 .storage
+blueprints
 custom_components
 custom_ui
 fuelio
