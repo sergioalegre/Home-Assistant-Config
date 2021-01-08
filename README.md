@@ -37,6 +37,7 @@ This config include dockers automation, ssh commands to the host from dockers.
     <img src="http://sergioalegre.es/github_screenshots/HA4.JPG" alt="" width="100%" height="">
     <img src="http://sergioalegre.es/github_screenshots/HA5.JPG" alt="" width="100%" height="">
     <img src="http://sergioalegre.es/github_screenshots/HA6.JPG" alt="" width="100%" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA7.JPG" alt="" width="100%" height="">
   </a>
 </p>
 
