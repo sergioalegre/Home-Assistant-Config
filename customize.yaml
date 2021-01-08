@@ -1,0 +1,29 @@
+  #FUELIO
+  sensor.odometro:
+    friendly_name: Total kilometros
+    icon: mdi:car-side
+  sensor.last_refueling:
+    friendly_name: Fecha ultimo repostaje
+    icon: mdi:calendar
+  sensor.med_consumption:
+    friendly_name: Media consumo
+    icon: mdi:gas-station
+  sensor.last_refueling_liters:
+    friendly_name: Litros ultimo repostaje
+    icon: mdi:gas-station
+  sensor.last_refueling_cost:
+    friendly_name: Costo ultimo repostaje
+    icon: mdi:currency-eur
+  sensor.last_refueling_liter_cost:
+    friendly_name: Costo litro ultimo repostaje
+    icon: mdi:currency-eur
+  sensor.anual_cost:
+    friendly_name: Costo repostaje año actual
+    icon: mdi:currency-eur
+  sensor.anual_past_cost:
+    friendly_name: Costo repostaje año anterior
+    icon: mdi:currency-eur
+  sensor.med_cost_month:
+    icon: mdi:currency-eur
+  sensor.med_cost_day:
+    icon: mdi:currency-eur

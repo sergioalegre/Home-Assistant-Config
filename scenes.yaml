@@ -1,0 +1,7 @@
+- id: '1607890347923'
+  name: Apagar gateway
+  entities:
+    light.gateway_light_7c49eb890a95:
+      friendly_name: Gateway Luz
+      supported_features: 17
+      state: 'off'

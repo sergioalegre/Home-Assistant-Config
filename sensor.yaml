@@ -1,0 +1,290 @@
+#https://www.home-assistant.io/components/sensor.systemmonitor/
+- platform: systemmonitor
+  resources:
+    - type: memory_use_percent
+    - type: processor_use
+    - type: swap_use_percent
+
+
+
+#FUELIO
+#Sensor odometro
+- platform: command_line
+  name: odometro
+  command: >-
+    cat /config/fuelio/vehicle-1-sync.csv | grep '"*"' | cut -d "," -f 2 | awk 'NR==6' | sed 's/"//g'
+  unit_of_measurement: "Km"
+  scan_interval: 86400 #cada dia
+#Media consumo
+- platform: command_line
+  name: med_consumption
+  command: >-
+   cat /config/fuelio/vehicle-1-sync.csv | grep '"*"' | cut -d "," -f 6 | awk 'NR==7' | sed 's/"//g'
+  unit_of_measurement: "lt/100 Km"
+  scan_interval: 86400 #cada dia
+#Fecha ultimo repostaje
+- platform: command_line
+  name: last_refueling
+  command: >-
+    cat /config/fuelio/vehicle-1-sync.csv | grep '"*"' | cut -d "," -f 1 | awk 'NR==6' | sed 's/"//g'
+  scan_interval: 86400 #cada dia
+#Litros último repostaje
+- platform: command_line
+  name: last_refueling_liters
+  command: >-
+    cat /config/fuelio/vehicle-1-sync.csv | grep '"*"' | cut -d "," -f 3 | awk 'NR==6' | sed 's/"//g'
+  unit_of_measurement: "lt"
+  scan_interval: 86400 #cada dia
+#Coste último repostaje
+- platform: command_line
+  name: last_refueling_cost
+  command: >-
+    cat /config/fuelio/vehicle-1-sync.csv | grep '"*"' | cut -d "," -f 5 | awk 'NR==6' | sed 's/"//g'
+  unit_of_measurement: "€"
+  scan_interval: 86400 #cada dia
+#Coste repostaje año actual ####APAÑO con el -2020###
+- platform: command_line
+  name: anual_cost
+  command: >-
+   grep "$(date '+%Y')" /config/fuelio/vehicle-1-sync.csv | cut -d "," -f 5 | sed 's/"//g' | awk '{sum+=$1} END {print sum}' #quizas haya que poner print sum - 2021
+  unit_of_measurement: "€"
+  scan_interval: 86400 #cada dia
+#Coste respostaje año anterior ####APAÑO con el -2020###
+- platform: command_line
+  name: anual_past_cost
+  command: >-
+    echo "912"
+  unit_of_measurement: "€"
+  scan_interval: 86400 #cada dia
+
+#Coste medio mensual y costo medio diario de la gasolina
+- platform: template
+  sensors:
+    gasolina_costo_medio_mensual:
+      unit_of_measurement: "€"
+      friendly_name: Costo medio mensual
+      value_template: "{{ ((states('sensor.anual_cost') | int) / 12 ) | round(2)}}"
+    gasolina_costo_medio_diario:
+      unit_of_measurement: "€"
+      friendly_name: Costo medio diario
+      value_template: "{{ ((states('sensor.anual_cost') | int) / 365 ) | round(2)}}"
+
+
+
+#Cuando se abrio por última vez la puerta de casa
+- platform: template
+  sensors:
+    puerta_casa_abierta_ultima_vez:
+      friendly_name: 'Puerta Casa abierta última vez'
+      icon_template: mdi:glassdoor
+      value_template: '{{ as_timestamp(states.binary_sensor.puerta_casa.last_updated) | timestamp_custom("%a %H:%M", True) }}'
+
+#Cuando se abrio por última vez la puerta del trastero
+- platform: template
+  sensors:
+    puerta_trastero_abierta_ultima_vez:
+      friendly_name: 'Puerta Trastero abierta última vez'
+      icon_template: mdi:glassdoor
+      value_template: '{{ as_timestamp(states.binary_sensor.puerta_trastero.last_updated) | timestamp_custom("%a %H:%M", True) }}'
+
+
+
+#TERMOSTATO
+#https://domoticaencasa.es/home-assistant-27-integrando-termostato-beok-fluoreon-y-decdeal/
+- platform: template
+  sensors:
+    calefaccion_activa:  # "heating" si está encendida la caldera
+      friendly_name: calefaccion_activa
+      value_template: "{{ states.climate.termostato_casa.attributes.hvac_action }}"
+    calefaccion_temperatura:  # Temperatura actual de la habitacion del termostato
+      friendly_name: calefaccion_temperatura
+      value_template: "{{ states.climate.termostato_casa.attributes.current_temperature | float }}"
+      unit_of_measurement: "ºC"
+
+
+
+#Templates de weather
+- platform: template
+  sensors:
+    weather_casa_termperatura:
+      friendly_name: weather_casa.temperatura
+      value_template: "{{ states.weather.casa.attributes.temperature | float }}"
+      unit_of_measurement: "ºC"
+    weather_casa_humedad:
+      friendly_name: weather_casa.humedad
+      value_template: "{{ states.weather.casa.attributes.humidity | float }}"
+      unit_of_measurement: "%"
+
+
+
+#https://github.com/cyberjunky/home-assistant-google_fit
+- platform: google_fit
+  name: Sergio
+  client_id: !secret google_client_id
+  client_secret: !secret google_client_secret
+
+
+
+#Tº de CPU
+- platform: command_line
+  name: CPU Temperature
+  command: >
+     ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "cat /sys/class/thermal/thermal_zone0/temp"
+  # If errors occur, make sure configuration file is encoded as UTF-8
+  unit_of_measurement: "°C"
+  value_template: '{{ value | multiply(0.001) | round(1) }}'
+
+
+
+#https://cyan-automation.medium.com/setting-up-power-and-energy-monitoring-with-a-shelly-em-and-home-assistant-492b5aa554f7
+- platform: template     
+  sensors:
+    energia_ayer:
+      # Use kWh, as that's the unit of the source
+      unit_of_measurement: kWh
+      icon_template: mdi:history
+      # Store yesterday's cumulative energy in a new variable
+      value_template: "{{ state_attr('sensor.daily_energy', 'last_period') }}"
+
+
+
+#https://www.home-assistant.io/integrations/history_stats/
+#ESTADISTICAS USO CALEFACCION
+- platform: history_stats
+  name: calefaccion_activa_hoy
+  entity_id:  sensor.calefaccion_activa
+  state: "heating"
+  type: time
+  start: '{{ now().replace(hour=0, minute=0, second=0) }}'
+  end: '{{ now() }}'    
+  
+- platform: history_stats
+  name:  calefaccion_activa_ayer
+  entity_id:  sensor.calefaccion_activa
+  state: "heating"
+  type: time
+  end: '{{ now().replace(hour=0, minute=0, second=0) }}'
+  duration:
+    hours: 24  
+
+- platform: history_stats
+  name:  calefaccion_activa_semana
+  entity_id:  sensor.calefaccion_activa
+  state: "heating"
+  type: time
+  start: '{{ as_timestamp( now().replace(hour=0, minute=0, second=0) ) - now().weekday() * 86400 }}'
+  end: '{{ now() }}'   
+
+- platform: history_stats
+  name:  calefaccion_activa_mes
+  entity_id:  sensor.calefaccion_activa
+  state: "heating"
+  type: time
+  end: '{{ now().replace(hour=0, minute=0, second=0) }}'
+  duration:
+    days: 30
+
+#ESTADISTICAS USO PORTATIL
+- platform: history_stats
+  name: portatil_activo_hoy
+  entity_id:  device_tracker.60_02_b4_49_c2_30
+  state: "home"
+  type: time
+  start: '{{ now().replace(hour=0, minute=0, second=0) }}'
+  end: '{{ now() }}'    
+  
+- platform: history_stats
+  name:  portatil_activo_ayer
+  entity_id:  device_tracker.60_02_b4_49_c2_30
+  state: "home"
+  type: time
+  end: '{{ now().replace(hour=0, minute=0, second=0) }}'
+  duration:
+    hours: 24  
+
+- platform: history_stats
+  name:  portatil_activo_semana
+  entity_id:  device_tracker.60_02_b4_49_c2_30
+  state: "home"
+  type: time
+  start: '{{ as_timestamp( now().replace(hour=0, minute=0, second=0) ) - now().weekday() * 86400 }}'
+  end: '{{ now() }}' 
+
+- platform: history_stats
+  name:  portatil_activo_mes
+  entity_id:  device_tracker.60_02_b4_49_c2_30
+  state: "home"
+  type: time
+  end: '{{ now().replace(hour=0, minute=0, second=0) }}'
+  duration:
+    days: 30
+  
+#ESTADISTICAS USO SOBREMESA
+- platform: history_stats
+  name: pcsobremesa_activo_hoy
+  entity_id:  device_tracker.d8_50_e6_ba_ce_0f
+  state: "home"
+  type: time
+  start: '{{ now().replace(hour=0, minute=0, second=0) }}'
+  end: '{{ now() }}'    
+  
+- platform: history_stats
+  name:  pcsobremesa_activo_ayer
+  entity_id:  device_tracker.d8_50_e6_ba_ce_0f
+  state: "home"
+  type: time
+  end: '{{ now().replace(hour=0, minute=0, second=0) }}'
+  duration:
+    hours: 24  
+
+- platform: history_stats
+  name:  pcsobremesa_activo_semana
+  entity_id:  device_tracker.d8_50_e6_ba_ce_0f
+  state: "home"
+  type: time
+  start: '{{ as_timestamp( now().replace(hour=0, minute=0, second=0) ) - now().weekday() * 86400 }}'
+  end: '{{ now() }}'
+
+- platform: history_stats
+  name:  pcsobremesa_activo_mes
+  entity_id:  device_tracker.d8_50_e6_ba_ce_0f
+  state: "home"
+  type: time
+  end: '{{ now().replace(hour=0, minute=0, second=0) }}'
+  duration:
+    days: 30
+
+#ESTADISTICAS USO TV_SALON
+- platform: history_stats
+  name: tv_salon_activo_hoy
+  entity_id: media_player.tv
+  state: "on"
+  type: time
+  start: '{{ now().replace(hour=0, minute=0, second=0) }}'
+  end: '{{ now() }}'    
+  
+- platform: history_stats
+  name:  tv_salon_activo_ayer
+  entity_id: media_player.tv
+  state: "on"
+  type: time
+  end: '{{ now().replace(hour=0, minute=0, second=0) }}'
+  duration:
+    hours: 24 
+
+- platform: history_stats
+  name:  tv_salon_activo_semana
+  entity_id: media_player.tv
+  state: "on"
+  type: time
+  start: '{{ as_timestamp( now().replace(hour=0, minute=0, second=0) ) - now().weekday() * 86400 }}'
+  end: '{{ now() }}'
+
+- platform: history_stats
+  name:  tv_salon_activo_mes
+  entity_id: media_player.tv
+  state: "on"
+  type: time
+  end: '{{ now().replace(hour=0, minute=0, second=0) }}'
+  duration:
+    days: 30

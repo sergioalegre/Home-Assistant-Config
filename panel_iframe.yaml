@@ -1,0 +1,19 @@
+#https://www.home-assistant.io/components/panel_iframe/
+#OJO: nombre del panel en minusculas
+
+camara:
+    title: 'Camara'
+    icon: mdi:cctv
+    url: 'http://192.168.0.5:8080'
+pihole:
+   title: 'PiHole'
+   icon: mdi:shield
+   url: 'http://192.168.0.2:81/admin'
+mdiindex:
+   title: MDI Icon Index
+   icon: mdi:vector-square
+   url: https://cdn.rawgit.com/james-fry/home-assistant-mdi/efd95d7a/home-assistant-mdi.html
+kodi:
+   title: 'Kodi'
+   icon: mdi:kodi
+   url: 'http://192.168.0.2:8080'

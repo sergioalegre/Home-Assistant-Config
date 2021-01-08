@@ -1,0 +1,56 @@
+purgar_bbdd:
+  alias: Purgar base de datos
+  sequence:
+  - data:
+      keep_days: '1'
+      repack: 'true'
+    service: recorder.purge
+notify_test_email:
+  alias: NotTest - Email
+  sequence:
+  - data:
+      message: test
+    service: notify.email_gmail
+notify_test_telegram:
+  alias: NotTest - Telegram
+  sequence:
+  - data:
+      message: Mensaje de prueba a Telegram
+    service: notify.telegram
+notify_test_kodi:
+  alias: NF NotTest - Kodi
+  sequence:
+  - data:
+      data:
+        title: Home Assistant
+        message: Message to KODI from Home Assistant!
+        data:
+          displaytime: 20000
+          icon: https://i.pinimg.com/originals/c1/55/a1/c155a1b393899ffd7c36ff01090ce8f5.jpg
+    service: notify.kodi
+  mode: single
+notify_test_tv:
+  alias: NotTest - TV
+  sequence:
+  - data:
+      message: Mensaje de prueba a TV
+    service: notify.tv_salon
+notify_test_html5:
+  alias: NotTest - HTML5
+  sequence:
+  - data:
+      message: This is a test
+      title: Test
+    service: notify.html5
+saludos_sergio_tts:
+  alias: Dime el tiempo en Kodi
+  sequence:
+  - service: tts.google_translate_say
+    entity_id: media_player.kodi
+    data_template:
+      message: '"{% if now().strftime("%H")|int < 12 %} Buenos días Sergio {% elif
+        now().strftime("%H")|int < 18 %} Buenas tardes Sergio {% else %} Buenas noches
+        Sergio {% endif %} La temperatura en la calle es {{ states(''sensor.weather_casa_termperatura'')
+        }} grados."'
+      cache: false
+  mode: single

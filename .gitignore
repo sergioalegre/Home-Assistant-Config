@@ -1,0 +1,27 @@
+# An * ensures that everything will be ignored.
+*.log
+*.db
+*.gz
+*.backup
+
+# You can whitelist files/folders with !, these will not be ignored.
+!*.yaml
+!.gitignore
+!*.md
+
+# Ignore folders.
+.storage
+custom_components
+custom_ui
+fuelio
+themes
+tts
+www
+
+# Ensure these YAML files are ignored, otherwise your secret data/credentials will leak.
+.google_fit.token
+id_rsa
+known_devices.yaml
+secrets.yaml
+SERVICE_ACCOUNT.JSON
+webostv.conf

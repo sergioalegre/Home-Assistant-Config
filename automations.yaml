@@ -1,0 +1,422 @@
+- alias: Telebot start
+  trigger:
+  - platform: event
+    event_type: telegram_command
+    event_data:
+      command: /start
+  action:
+  - service: notify.telegram
+    data:
+      title: naarean@HA
+      message: Panel de Control
+      data:
+        inline_keyboard:
+        - Temperatura:/opcion1, Luces:/opcion2, Persianas:/opcion3
+  id: 9eabc85673184adb9f357b00b9b975a1
+- alias: Telebot cancel
+  trigger:
+  - platform: event
+    event_type: telegram_callback
+    event_data:
+      data: /cancel
+  action:
+  - service: notify.telegram
+    data:
+      message: Panel de Control
+      data:
+        inline_keyboard:
+        - Temperatura:/opcion1, Luces:/opcion2, Persianas:/opcion3
+  id: 1973c83d89e6482586b36938826de505
+- alias: Telebot Temperatura
+  trigger:
+  - platform: event
+    event_type: telegram_callback
+    event_data:
+      data: /opcion1
+  action:
+  - service: telegram_bot.answer_callback_query
+    data_template:
+      callback_query_id: '{{ trigger.event.data.id }}'
+      message: Temperatura
+  - service: notify.telegram
+    data_template:
+      title: Temperatura
+      message: Tº Salón {{ states('sensor.temperature_158d0002d45792') }} , Tº Dormitorio
+        {{ states('sensor.temperature_158d0002e98e60') }}
+      data:
+        inline_keyboard:
+        - Atras:/cancel
+  id: abe87a514a3c457ea3ded5b6333fad52
+- alias: Telebot Luces
+  trigger:
+  - platform: event
+    event_type: telegram_callback
+    event_data:
+      data: /opcion2
+  action:
+  - service: telegram_bot.answer_callback_query
+    data_template:
+      callback_query_id: '{{ trigger.event.data.id }}'
+      message: Luces
+  - service: notify.telegram
+    data_template:
+      title: Luces
+      message: '{% if is_state("light.luz_salon", "on") %} Luz Salon encendida {%
+        else %} Luz Salon apagada {% endif %} {% if is_state("light.gateway_light_7c49eb890a95",
+        "on") %} Luz Pasillo encendida {% else %} Luz Pasillo apagada {% endif %}'
+      data:
+        inline_keyboard:
+        - Atras:/cancel
+  id: 6ba72d7858c040e889cc931136b73f11
+- alias: Telebot Persianas
+  trigger:
+  - platform: event
+    event_type: telegram_callback
+    event_data:
+      data: /opcion3
+  action:
+  - service: telegram_bot.answer_callback_query
+    data_template:
+      callback_query_id: '{{ trigger.event.data.id }}'
+      message: Persianas
+  - service: notify.telegram
+    data_template:
+      title: Persianas
+      message: '{% if is_state("cover.persiana1", "open") %} Persiana1 subida {% else
+        %} Persiana1 bajada {% endif %} {% if is_state("cover.persiana2", "open")
+        %} Persiana2 subida {% else %} Persiana2 bajada {% endif %} {% if is_state("cover.persiana3",
+        "open") %} Persiana3 subida {% else %} Persiana3 bajada {% endif %}'
+      data:
+        inline_keyboard:
+        - Atras:/cancel
+  id: ec9b6f2764e74a519d0e60804258ec26
+- alias: Actualizar Fuelio 22:05h
+  trigger:
+    at: '22:05'
+    platform: time
+  action:
+    service: shell_command.actualizar_fuelio
+  id: f9683cc139c7416fb3453a22f6ae580e
+- alias: Actualizar PiHole 22:10h
+  trigger:
+    at: '22:10'
+    platform: time
+  action:
+    service: shell_command.actualizar_pihole
+  id: 2d47a51acabd4ae0b098aa4ab229fff3
+- id: b86408b7ce8a4fb7a0db031ca1a3e770
+  alias: Movimiento pasillo + oscuro = enciende GW
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.movimiento_mi
+    from: 'off'
+    to: 'on'
+  - platform: state
+    entity_id: sensor.luminosidad_gateway
+    from: '0'
+    to: '100'
+  condition:
+  - condition: time
+    after: '18:00:00'
+    before: 07:00:00
+  action:
+  - service: light.turn_on
+    entity_id: light.gateway_light_7c49eb890a95
+    data:
+      brightness: 5
+      transition: 300
+  - delay: 0:00:05
+  - scene: scene.apagar_gateway
+  mode: single
+- id: bfa77cf84f284f7db6f96be9f7e1ea0d
+  alias: Movimiento pasillo aqara + oscuro = enciende GW
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.movimiento_aqara
+    from: 'off'
+    to: 'on'
+  - platform: state
+    entity_id: sensor.luminosidad_gateway
+    to: '100'
+  condition:
+  - condition: time
+    after: '18:00:00'
+    before: 07:00:00
+  action:
+  - service: light.turn_on
+    entity_id: light.gateway_light_7c49eb890a95
+    data:
+      brightness: 5
+      transition: 300
+  - delay: 0:00:05
+  - scene: scene.apagar_gateway
+  mode: single
+- id: 7fb0effac92542829d0d95b2c9881849
+  alias: Abre puerta + Sergio no casa = Notificar
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.puerta_casa
+    from: 'off'
+    to: 'on'
+  condition:
+  - condition: zone
+    entity_id: device_tracker.redmi_note_8
+    zone: zone.trabajo
+  action:
+  - service: notify.telegram
+    data:
+      title: Alguien entró en casa...
+      message: '...y tu estas en el trabajo'
+  - service: notify.mobile_app_redmi_note_8
+    data:
+      title: Alguien entró en casa...
+      message: '...y tu estas en el trabajo'
+  mode: single
+- id: bcece129f1de4402bc8fe4ec032ab607
+  alias: Puerta Casa 1min abierta = Alarma + Notificar
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.puerta_casa
+    from: 'off'
+    to: 'on'
+    for: 0:01:00
+  action:
+  - service: notify.telegram
+    data:
+      title: Atención
+      message: La puerta lleva abierta más de un minuto
+  - service: xiaomi_aqara.play_ringtone
+    data:
+      gw_mac: 7c49eb890a95
+      ringtone_id: 2
+      ringtone_vol: 10
+  mode: single
+- id: b32725e7ff1e459bad96f5c661e9ec41
+  alias: Puerta Trastero 1min abierta = Alarma + Notificar
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.puerta_trastero
+    from: 'off'
+    to: 'on'
+    for: 0:01:00
+  action:
+  - service: notify.telegram
+    data:
+      title: Atención
+      message: La puerta del trastero lleva abierta más de un minuto
+  - service: xiaomi_aqara.play_ringtone
+    data:
+      gw_mac: 7c49eb890a95
+      ringtone_id: 2
+      ringtone_vol: 10
+  mode: single
+- alias: Cuando Sergio llega
+  trigger:
+    platform: state
+    entity_id: device_tracker.redmi_note_8
+    from: not_home
+    to: home
+  action:
+    service: notify.telegram
+    data:
+      message: Sergio está en casa
+  id: 811dfbef323a4542aff2e37df4b2e260
+- alias: Cuando Sergio se va
+  trigger:
+    platform: state
+    entity_id: device_tracker.redmi_note_8
+    from: home
+    to: not_home
+  action:
+    service: notify.telegram
+    data:
+      message: Sergio se ha ido
+  id: ea401b57fc6140668868ecc7cd12d631
+- id: 29fbbc4d474a4117bb7877d8f44497b0
+  alias: a 16º caliento dormitorio
+  trigger:
+  - platform: time_pattern
+    minutes: /15
+  condition:
+  - condition: numeric_state
+    entity_id: sensor.temperatura_dormitorio
+    below: '16'
+    above: '10'
+  - condition: time
+    after: '22:00:00'
+    before: 06:00:00
+  action:
+  - service: notify.todos
+    data:
+      message: Tº menor a 16º en Dormitorio -> Enciendo calefacción y apago automatización
+  - service: climate.turn_on
+    data: {}
+    entity_id: climate.termostato_casa
+  - service: climate.set_temperature
+    data:
+      temperature: 22
+    entity_id: climate.termostato_casa
+  - service: climate.set_hvac_mode
+    data:
+      hvac_mode: heat
+    entity_id: climate.termostato_casa
+  - service: automation.turn_off
+    data: {}
+    entity_id: automation.a_19o_caliento_dormitorio
+  mode: single
+- id: f80ad94736c944f783d5115316ec3bb2
+  alias: a 16.5º no sigo calentando dormitorio
+  trigger:
+  - platform: time_pattern
+    minutes: /15
+  condition:
+  - condition: numeric_state
+    entity_id: sensor.temperatura_dormitorio
+    above: '16.5'
+  - condition: time
+    after: '22:00:00'
+    before: 06:00:00
+  action:
+  - service: notify.telegram
+    data:
+      message: Dormitorio a 16.5º -> paro calefacción y reactivo a 16º
+  - service: notify.mobile_app_redmi_note_8
+    data:
+      message: Dormitorio a 16.5º -> paro calefacción y reactivo a 16º
+  - service: climate.turn_off
+    data: {}
+    entity_id: climate.termostato_casa
+  - service: automation.turn_on
+    data: {}
+    entity_id: automation.a_19o_caliento_dormitorio
+  mode: single
+- id: '1608635831639'
+  alias: Bateria Movimiento Aqara al 15%
+  description: ''
+  use_blueprint:
+    path: homeassistant/battery_level_notify.yaml
+    input:
+      battery_level: '15'
+      notify_device: 6c9c8542f5966a4036b92673670bc7bb
+      battery_entity: sensor.bateria_movimiento_aqara
+      message: Batería de {{ entity_name }} al {{ battery_level }}%
+- id: '1609245391620'
+  alias: 17pm Apagar Webmin y VPN
+  description: ''
+  trigger:
+  - platform: time
+    at: '17:00:00'
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    entity_id: switch.webmin
+  - service: switch.turn_off
+    data: {}
+    entity_id: switch.wireguard
+  - service: notify.telegram
+    data:
+      message: 17PM apago Webmin y VPN
+  mode: single
+- id: '1609247376652'
+  alias: Bateria Movimiento Mi al 15%
+  description: ''
+  use_blueprint:
+    path: homeassistant/battery_level_notify.yaml
+    input:
+      battery_level: '15'
+      notify_device: 6c9c8542f5966a4036b92673670bc7bb
+      battery_entity: sensor.battery_movimiento_mi
+      message: Batería de {{ entity_name }} al {{ battery_level }}%
+- id: '1609247405686'
+  alias: Bateria Puerta Casa
+  description: ''
+  use_blueprint:
+    path: homeassistant/battery_level_notify.yaml
+    input:
+      battery_level: '15'
+      notify_device: 6c9c8542f5966a4036b92673670bc7bb
+      battery_entity: sensor.bateria_puerta_casa
+      message: Batería de {{ entity_name }} al {{ battery_level }}%
+- id: '1609247419886'
+  alias: Bateria Puerta Trastero
+  description: ''
+  use_blueprint:
+    path: homeassistant/battery_level_notify.yaml
+    input:
+      battery_level: '15'
+      notify_device: 6c9c8542f5966a4036b92673670bc7bb
+      battery_entity: sensor.bateria_puerta_trastero
+      message: Batería de {{ entity_name }} al {{ battery_level }}%
+- id: '1609247443526'
+  alias: Bateria Temperatura Dormitorio
+  description: ''
+  use_blueprint:
+    path: homeassistant/battery_level_notify.yaml
+    input:
+      battery_level: '15'
+      notify_device: 6c9c8542f5966a4036b92673670bc7bb
+      battery_entity: sensor.bateria_temperatura_dormitorio
+      message: Batería de {{ entity_name }} al {{ battery_level }}%
+- id: '1609247463086'
+  alias: Bateria Temperatura Salon
+  description: ''
+  use_blueprint:
+    path: homeassistant/battery_level_notify.yaml
+    input:
+      battery_level: '15'
+      notify_device: 6c9c8542f5966a4036b92673670bc7bb
+      battery_entity: sensor.bateria_temperatura_salon
+      message: Batería de {{ entity_name }} al {{ battery_level }}%
+- id: '1610002620620'
+  alias: TV off y USB on -> USB off
+  description: ''
+  trigger:
+  - platform: time_pattern
+    minutes: /15
+  condition:
+  - condition: state
+    entity_id: switch.disco_externo
+    state: 'on'
+  - condition: state
+    entity_id: media_player.tv
+    state: 'off'
+  action:
+  - service: switch.turn_off
+    data: {}
+    entity_id: switch.disco_externo
+  - service: notify.todos
+    data:
+      message: TV off -> apago USB y automatización
+  mode: single
+- id: '1610004447275'
+  alias: Subir persianas Salon en Invierno
+  description: ''
+  trigger:
+  - platform: time
+    at: '11:00:00'
+  condition:
+  - condition: numeric_state
+    entity_id: cover.shelly_shsw_25_40f520005f30
+    attribute: current_position
+    below: '25'
+  action:
+  - service: cover.open_cover
+    data: {}
+    entity_id: cover.shelly_shsw_25_40f520001121
+  - service: cover.open_cover
+    data: {}
+    entity_id: cover.shelly_shsw_25_40f52000bceb
+  - service: cover.open_cover
+    data: {}
+    entity_id: cover.shelly_shsw_25_40f520005f30
+  - service: notify.tv_salon
+    data:
+      message: 11AM y persiana3 bajada -> Subo persianas
+  - service: notify.telegram
+    data:
+      message: 11AM y persiana3 bajada -> Subo persianas
+  - service: notify.mobile_app_redmi_note_8
+    data:
+      message: 11AM y persiana3 bajada -> Subo persianas
+  mode: single

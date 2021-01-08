@@ -1,0 +1,6 @@
+  persianas_salon:
+    name: Persianas_Salon
+    entities:
+    - cover.shelly_shsw_25_40f520001121
+    - cover.shelly_shsw_25_40f52000bceb
+    - cover.shelly_shsw_25_40f520005f30

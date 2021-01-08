@@ -1,0 +1,52 @@
+#https://www.home-assistant.io/integrations/notify.group
+- name: TODOS
+  platform: group
+  services:
+    - service: telegram
+    - service: kodi    
+    - service: webostv
+
+
+#https://www.home-assistant.io/components/notify.telegram/
+- name: telegram
+  platform: telegram
+  chat_id: !secret telegram_idchat1
+
+
+- platform: kodi
+  name: kodi
+  host: 192.168.0.2
+  port: 8080
+  username: !secret kodi_username
+  password: !secret kodi_password
+
+
+
+#https://www.home-assistant.io/components/notify.webostv/
+- platform: webostv
+  host: 192.168.0.99
+  name: tv_salon
+
+
+#https://www.home-assistant.io/integrations/html5/
+#solo funcionan por la interfaz publica https://naarean.duckdns.org
+- platform: html5
+  name: html5
+  vapid_pub_key: !secret html5_vapid_pub_key
+  vapid_prv_key: !secret html5_vapid_prv_key
+  vapid_email: !secret email
+
+
+#https://www.home-assistant.io/components/notify.smtp/
+# - name: email_gmail
+#   platform: smtp
+#   server: smtp.gmail.com
+#   port: 465
+#   timeout: 15
+#   sender: !secret gmail_user
+#   encryption: tls
+#   username: !secret gmail_user
+#   password: !secret gmail_pass
+#   recipient:
+#     - !secret gmail_user
+#   sender_name: Home Assistant
