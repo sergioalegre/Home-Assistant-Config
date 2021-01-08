@@ -31,7 +31,12 @@ This config include dockers automation, ssh commands to the host from dockers.
 <br><br>
 <p align="center">
   <a href="https://github.com/sergioalegre/Home-Assistant-Config">
-    <img src="http://sergioalegre.es/Programacion/_BuscadorAJAX/captura.PNG" alt="Logo" width="360" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA1" alt="" width="360" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA2" alt="" width="360" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA3" alt="" width="360" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA4" alt="" width="360" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA5" alt="" width="360" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA6" alt="" width="360" height="">
   </a>
 </p>
 
@@ -48,7 +53,6 @@ Website: http://me.sergioalegre.es
 <!-- TECNOLOGIAS -->
 * [DOCKER](DOCKER)
 * [SSH](SSH)
-<!-- INTEGRACIONES -->
 * [SHELLY EM](SHELLY EM)
 * [SHELLY COVERS](SHELLY COVERS)
 * [FLOUREON Thermostat](FLOUREON Thermostat)
