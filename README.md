@@ -31,12 +31,12 @@ This config include dockers automation, ssh commands to the host from dockers.
 <br><br>
 <p align="center">
   <a href="https://github.com/sergioalegre/Home-Assistant-Config">
-    <img src="http://sergioalegre.es/github_screenshots/HA1" alt="" width="360" height="">
-    <img src="http://sergioalegre.es/github_screenshots/HA2" alt="" width="360" height="">
-    <img src="http://sergioalegre.es/github_screenshots/HA3" alt="" width="360" height="">
-    <img src="http://sergioalegre.es/github_screenshots/HA4" alt="" width="360" height="">
-    <img src="http://sergioalegre.es/github_screenshots/HA5" alt="" width="360" height="">
-    <img src="http://sergioalegre.es/github_screenshots/HA6" alt="" width="360" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA1.JPG" alt="" width="512" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA2.JPG" alt="" width="512" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA3.JPG" alt="" width="512" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA4.JPG" alt="" width="512" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA5.JPG" alt="" width="512" height="">
+    <img src="http://sergioalegre.es/github_screenshots/HA6.JPG" alt="" width="512" height="">
   </a>
 </p>
 
