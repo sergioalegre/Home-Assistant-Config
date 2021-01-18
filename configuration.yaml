@@ -1,4 +1,4 @@
-# Configure a default setup of Home Assistant (frontend, api, etc)
+# Configure a default setup of Home Assistant (frontend, history, api, etc)
 default_config:
 
 
@@ -68,10 +68,11 @@ telegram_bot:
 
 
 
-#https://www.home-assistant.io/components/switch.template/
+# https://www.home-assistant.io/components/switch.template/
 # https://www.home-assistant.io/components/sensor.command_line/
 # https://domology.es/scripts-y-comandos-ssh-en-home-assistant/
 switch:
+
   - platform: command_line
     switches:
 
@@ -81,7 +82,7 @@ switch:
       command_off: >
         ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo systemctl stop kodi"
       command_state: >
-        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "systemctl status kodi --full | grep -oc 'Active: active (running)'"
+        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo systemctl status kodi --full | grep -oc 'Active: active (running)'"
       value_template: '{{ value == "1" }}'
 
      webmin:
@@ -99,23 +100,23 @@ switch:
       command_off: >
         ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo docker stop pihole"
       command_state: >
-        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "docker ps | grep pihole | wc -l"
+        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo docker ps | grep pihole | wc -l"
       value_template: '{{ value == "1" }}'
 
      wireguard:
       command_on: >
-        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "docker start addon_a0d7b954_wireguard"
+        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo docker start addon_a0d7b954_wireguard"
       command_off: >
-        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "docker stop addon_a0d7b954_wireguard"
+        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo docker stop addon_a0d7b954_wireguard"
       command_state: >
-        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "docker ps | grep addon_a0d7b954_wireguard | wc -l"
+        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo docker ps | grep addon_a0d7b954_wireguard | wc -l"
       value_template: '{{ value == "1" }}'       
 
      disco_externo:
       command_on: >
-        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo echo '1-1.3' | sudo tee /sys/bus/usb/drivers/usb/bind; sudo sleep 5; sudo mount /media/DISCO_USB_EXT"
+        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo echo '2-2' | sudo tee /sys/bus/usb/drivers/usb/bind; sudo sleep 5; sudo mount /media/DISCO_USB_EXT"
       command_off: >
-        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo umount /media/DISCO_USB_EXT; sudo sleep 5; sudo echo '1-1.3' | sudo tee /sys/bus/usb/drivers/usb/unbind"
+        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo umount /media/DISCO_USB_EXT; sudo sleep 5; sudo echo '2-2' | sudo tee /sys/bus/usb/drivers/usb/unbind"
       command_state: >
         ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo cat /etc/mtab | grep DISCO_USB_EXT | wc -l"
       value_template: '{{ value == "1" }}'       
@@ -132,9 +133,6 @@ switch:
         command_on: >
          ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo echo 'on 0' | cec-client -s"
 
-     apagar_television:
-        command_on: >
-         ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo echo 'standby 0' | cec-client -s"
 
 
   #TERMOSTATO este switch es necesario para que funcione fluoreon
@@ -215,6 +213,12 @@ utility_meter:
   monthly_energy:
     source: sensor.shelly_shem_c7ec27_1_total_consumption
     cycle: monthly
+  daily_energy_rest:
+    source: sensor.shelly_em_energia_total_rest
+    cycle: daily
+  monthly_energy_rest:
+    source: sensor.shelly_em_energia_total_rest
+    cycle: monthly    
 
 
 
@@ -247,6 +251,7 @@ google_assistant:
   project_id: gassistantha
   service_account: !include SERVICE_ACCOUNT.JSON
   report_state: true
+  expose_by_default: true
   entity_config:
     switch.termostato_casa:
         expose: false
@@ -281,7 +286,11 @@ google_assistant:
     binary_sensor.puerta_trastero:
         expose: false
     media_player.tv:
-        expose: false        
+        expose: false
+    switch.encender_television:
+        name: television
+    switch.wireguard:
+        name: VPN        
 
 group: !include groups.yaml
 automation: !include automations.yaml

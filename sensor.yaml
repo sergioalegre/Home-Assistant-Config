@@ -136,6 +136,7 @@
 
 
 
+###SHELLY EM
 #https://cyan-automation.medium.com/setting-up-power-and-energy-monitoring-with-a-shelly-em-and-home-assistant-492b5aa554f7
 - platform: template     
   sensors:
@@ -145,6 +146,38 @@
       icon_template: mdi:history
       # Store yesterday's cumulative energy in a new variable
       value_template: "{{ state_attr('sensor.daily_energy', 'last_period') }}"
+
+- platform: template     
+  sensors:
+    energia_ayer_rest:
+      # Use kWh, as that's the unit of the source
+      unit_of_measurement: kWh
+      icon_template: mdi:history
+      # Store yesterday's cumulative energy in a new variable
+      value_template: "{{ state_attr('sensor.daily_energy_rest', 'last_period') }}"      
+
+#https://www.home-assistant.io/integrations/rest/
+#https://community.home-assistant.io/t/any-experience-with-utility-meter-functions/149904/2
+#obtenido haciendo: curl -X GET http://192.168.0.108/status --output EM.txt
+- platform: rest
+  name: Shelly EM energia actual REST
+  resource: http://192.168.0.108/status
+#   username: !secret shelly_usr
+#   password: !secret shelly_pwd
+#   authentication: basic
+  value_template: '{{ (value_json.emeters.0.power)}}'
+  scan_interval: 1 #1segundos
+  unit_of_measurement: W
+  
+- platform: rest
+  name: Shelly EM energia total REST
+  resource: http://192.168.0.108/status
+#   username: !secret shelly_usr
+#   password: !secret shelly_pwd
+#   authentication: basic
+  value_template: '{{ (value_json.emeters.0.total | float /1000)|round(3) }}' # Wh to kWh
+  scan_interval: 300 # no point updating faster than this. The Shelly only updates every 5 minutes
+  unit_of_measurement: kWh
 
 
 

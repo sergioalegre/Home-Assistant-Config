@@ -118,7 +118,7 @@
   condition:
   - condition: time
     after: '18:00:00'
-    before: 07:00:00
+    before: 07:30:00
   action:
   - service: light.turn_on
     entity_id: light.gateway_light_7c49eb890a95
@@ -233,14 +233,14 @@
       message: Sergio se ha ido
   id: ea401b57fc6140668868ecc7cd12d631
 - id: 29fbbc4d474a4117bb7877d8f44497b0
-  alias: a 16º caliento dormitorio
+  alias: a 14º caliento dormitorio
   trigger:
   - platform: time_pattern
     minutes: /15
   condition:
   - condition: numeric_state
     entity_id: sensor.temperatura_dormitorio
-    below: '16'
+    below: '14'
     above: '10'
   - condition: time
     after: '22:00:00'
@@ -248,7 +248,7 @@
   action:
   - service: notify.todos
     data:
-      message: Tº menor a 16º en Dormitorio -> Enciendo calefacción y apago automatización
+      message: Tº menor a 14º en Dormitorio -> Enciendo calefacción y apago automatización
   - service: climate.turn_on
     data: {}
     entity_id: climate.termostato_casa
@@ -265,22 +265,19 @@
     entity_id: automation.a_19o_caliento_dormitorio
   mode: single
 - id: f80ad94736c944f783d5115316ec3bb2
-  alias: a 16.5º no sigo calentando dormitorio
+  alias: a 14.5º no sigo calentando dormitorio
   trigger:
   - platform: time_pattern
     minutes: /15
   condition:
   - condition: numeric_state
     entity_id: sensor.temperatura_dormitorio
-    above: '16.5'
+    above: '14.5'
   - condition: time
     after: '22:00:00'
     before: 06:00:00
   action:
-  - service: notify.telegram
-    data:
-      message: Dormitorio a 16.5º -> paro calefacción y reactivo a 16º
-  - service: notify.mobile_app_redmi_note_8
+  - service: notify.todos
     data:
       message: Dormitorio a 16.5º -> paro calefacción y reactivo a 16º
   - service: climate.turn_off
@@ -373,7 +370,7 @@
   description: ''
   trigger:
   - platform: time_pattern
-    minutes: /15
+    hours: /1
   condition:
   - condition: state
     entity_id: switch.disco_externo
@@ -387,19 +384,23 @@
     entity_id: switch.disco_externo
   - service: notify.todos
     data:
-      message: TV off -> apago USB y automatización
+      message: TV off -> apago USB
   mode: single
 - id: '1610004447275'
   alias: Subir persianas Salon en Invierno
   description: ''
   trigger:
   - platform: time
-    at: '11:00:00'
+    at: '10:00:00'
   condition:
-  - condition: numeric_state
-    entity_id: cover.shelly_shsw_25_40f520005f30
-    attribute: current_position
-    below: '25'
+  - condition: state
+    entity_id: weather.casa
+    state: sunny
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: weather.casa
+      state: partlycloudy
   action:
   - service: cover.open_cover
     data: {}
@@ -410,13 +411,19 @@
   - service: cover.open_cover
     data: {}
     entity_id: cover.shelly_shsw_25_40f520005f30
-  - service: notify.tv_salon
+  - service: notify.todos
     data:
       message: 11AM y persiana3 bajada -> Subo persianas
-  - service: notify.telegram
-    data:
-      message: 11AM y persiana3 bajada -> Subo persianas
-  - service: notify.mobile_app_redmi_note_8
-    data:
-      message: 11AM y persiana3 bajada -> Subo persianas
+  mode: single
+- id: '1610884133558'
+  alias: 06:00 apagar calefacción
+  description: ''
+  trigger:
+  - platform: time
+    at: 06:00:00
+  condition: []
+  action:
+  - service: climate.turn_off
+    data: {}
+    entity_id: climate.termostato_casa
   mode: single

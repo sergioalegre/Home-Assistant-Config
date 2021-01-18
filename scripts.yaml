@@ -54,3 +54,11 @@ saludos_sergio_tts:
         }} grados."'
       cache: false
   mode: single
+mensaje_de_prueba:
+  alias: mensaje de prueba
+  sequence:
+  - service: notify.todos
+    data:
+      message: he ejecutado el script llamado mensaje de prueba
+  mode: single
+  icon: mdi:monitor

@@ -5,3 +5,101 @@
       friendly_name: Gateway Luz
       supported_features: 17
       state: 'off'
+- id: '1610373230739'
+  name: Modo Noche
+  entities:
+    cover.shelly_shsw_25_40f520001121:
+      current_position: 40
+      shelly_type: Shelly 2.5 (Roller)
+      shelly_id: 40F520001121
+      ip_address: 192.168.0.104
+      protocols:
+      - IP-addr
+      - poll
+      over_temp: false
+      has_firmware_update: false
+      cloud_status: connected
+      total_consumption: 0.0 kWh
+      friendly_name: Persiana1
+      supported_features: 15
+      state: open
+    cover.shelly_shsw_25_40f52000bceb:
+      current_position: 0
+      shelly_type: Shelly 2.5 (Roller)
+      shelly_id: 40F52000BCEB
+      ip_address: 192.168.0.105
+      protocols:
+      - IP-addr
+      - poll
+      over_temp: false
+      has_firmware_update: false
+      cloud_status: disconnected
+      total_consumption: 0.0 kWh
+      friendly_name: Persiana2
+      supported_features: 15
+      state: closed
+    cover.shelly_shsw_25_40f520005f30:
+      current_position: 30
+      shelly_type: Shelly 2.5 (Roller)
+      shelly_id: 40F520005F30
+      ip_address: 192.168.0.106
+      protocols:
+      - IP-addr
+      - poll
+      over_temp: false
+      has_firmware_update: false
+      cloud_status: connected
+      total_consumption: 0.0 kWh
+      friendly_name: Persiana3
+      supported_features: 15
+      state: open
+  icon: mdi:window-closed
+- id: '1610373484307'
+  name: Modo TV
+  entities:
+    cover.shelly_shsw_25_40f520001121:
+      current_position: 15
+      shelly_type: Shelly 2.5 (Roller)
+      shelly_id: 40F520001121
+      ip_address: 192.168.0.104
+      protocols:
+      - IP-addr
+      - poll
+      over_temp: false
+      has_firmware_update: false
+      cloud_status: connected
+      total_consumption: 0.0 kWh
+      friendly_name: Persiana1
+      supported_features: 15
+      state: open
+    cover.shelly_shsw_25_40f52000bceb:
+      current_position: 15
+      shelly_type: Shelly 2.5 (Roller)
+      shelly_id: 40F52000BCEB
+      ip_address: 192.168.0.105
+      protocols:
+      - IP-addr
+      - poll
+      over_temp: false
+      has_firmware_update: false
+      cloud_status: connected
+      total_consumption: 0.0 kWh
+      friendly_name: Persiana2
+      supported_features: 15
+      state: open
+    cover.shelly_shsw_25_40f520005f30:
+      current_position: 15
+      shelly_type: Shelly 2.5 (Roller)
+      shelly_id: 40F520005F30
+      ip_address: 192.168.0.106
+      protocols:
+      - IP-addr
+      - poll
+      over_temp: false
+      has_firmware_update: false
+      cloud_status: connected
+      total_consumption: 0.0 kWh
+      friendly_name: Persiana3
+      supported_features: 15
+      state: closing
+  icon: mdi:window-closed
