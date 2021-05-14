@@ -321,3 +321,11 @@
   end: '{{ now().replace(hour=0, minute=0, second=0) }}'
   duration:
     days: 30
+
+
+
+#ZIGBEE2MQTT
+- platform: mqtt
+  name: Estado del Coordinador
+  state_topic: "zigbee2mqtt/bridge/state"
+  icon: mdi:remote

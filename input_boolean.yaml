@@ -1,0 +1,5 @@
+#ZIGBEE2MQTT
+zigbee_permit_join:
+  name: Permitir emparejamiento
+  initial: off
+  icon: mdi:cellphone-wireless

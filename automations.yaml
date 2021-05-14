@@ -116,15 +116,16 @@
     from: '0'
     to: '100'
   condition:
-  - condition: time
-    after: '18:00:00'
-    before: 07:30:00
+  - condition: sun
+    before: sunrise
+    after: sunset
   action:
   - service: light.turn_on
-    entity_id: light.gateway_light_7c49eb890a95
     data:
       brightness: 5
       transition: 300
+    target:
+      entity_id: light.gateway_light_7c49eb890a95
   - delay: 0:00:05
   - scene: scene.apagar_gateway
   mode: single
@@ -139,15 +140,16 @@
     entity_id: sensor.luminosidad_gateway
     to: '100'
   condition:
-  - condition: time
-    after: '18:00:00'
-    before: 07:00:00
+  - condition: sun
+    before: sunrise
+    after: sunset
   action:
   - service: light.turn_on
-    entity_id: light.gateway_light_7c49eb890a95
     data:
       brightness: 5
       transition: 300
+    target:
+      entity_id: light.gateway_light_7c49eb890a95
   - delay: 0:00:05
   - scene: scene.apagar_gateway
   mode: single
@@ -233,22 +235,22 @@
       message: Sergio se ha ido
   id: ea401b57fc6140668868ecc7cd12d631
 - id: 29fbbc4d474a4117bb7877d8f44497b0
-  alias: a 14º caliento dormitorio
+  alias: a 15º caliento dormitorio
   trigger:
   - platform: time_pattern
     minutes: /15
   condition:
   - condition: numeric_state
     entity_id: sensor.temperatura_dormitorio
-    below: '14'
+    below: '15'
     above: '10'
   - condition: time
-    after: '22:00:00'
+    after: '22:30:00'
     before: 06:00:00
   action:
   - service: notify.todos
     data:
-      message: Tº menor a 14º en Dormitorio -> Enciendo calefacción y apago automatización
+      message: Tº menor a 15º en Dormitorio -> Enciendo calefacción y apago automatización
   - service: climate.turn_on
     data: {}
     entity_id: climate.termostato_casa
@@ -263,23 +265,26 @@
   - service: automation.turn_off
     data: {}
     entity_id: automation.a_19o_caliento_dormitorio
+  - service: automation.turn_on
+    data: {}
+    entity_id: automation.a_21o_no_sigo_calentando_dormitorio
   mode: single
 - id: f80ad94736c944f783d5115316ec3bb2
-  alias: a 14.5º no sigo calentando dormitorio
+  alias: a 15.5º no sigo calentando dormitorio
   trigger:
   - platform: time_pattern
     minutes: /15
   condition:
   - condition: numeric_state
     entity_id: sensor.temperatura_dormitorio
-    above: '14.5'
+    above: '15.5'
   - condition: time
-    after: '22:00:00'
+    after: '22:30:00'
     before: 06:00:00
   action:
   - service: notify.todos
     data:
-      message: Dormitorio a 16.5º -> paro calefacción y reactivo a 16º
+      message: Dormitorio a 15.5º -> paro calefacción y reactivo a 15º
   - service: climate.turn_off
     data: {}
     entity_id: climate.termostato_casa
@@ -393,14 +398,14 @@
   - platform: time
     at: '10:00:00'
   condition:
-  - condition: state
-    entity_id: weather.casa
-    state: sunny
   - condition: or
     conditions:
     - condition: state
       entity_id: weather.casa
       state: partlycloudy
+    - condition: state
+      entity_id: weather.casa
+      state: sunny
   action:
   - service: cover.open_cover
     data: {}
@@ -413,7 +418,7 @@
     entity_id: cover.shelly_shsw_25_40f520005f30
   - service: notify.todos
     data:
-      message: 11AM y persiana3 bajada -> Subo persianas
+      message: 10AM y hace  -> Subo persianas
   mode: single
 - id: '1610884133558'
   alias: 06:00 apagar calefacción
@@ -427,3 +432,74 @@
     data: {}
     entity_id: climate.termostato_casa
   mode: single
+- id: '1611496500506'
+  alias: Alerta Temperatura Rpi
+  description: ''
+  trigger:
+  - platform: time_pattern
+    minutes: /15
+  condition:
+  - condition: numeric_state
+    entity_id: sensor.cpu_temperature
+    above: '70'
+  action:
+  - service: notify.todos
+    data:
+      message: ALERTA T° pi > 70°"
+  mode: single
+- id: '1613402028754'
+  alias: 02:00 Purgar BBDD
+  description: ''
+  trigger: []
+  condition: []
+  action:
+  - service: script.turn_on
+    data: {}
+    entity_id: script.purgar_bbdd
+  - service: notify.todos
+    data:
+      message: Purgando base de datos
+  mode: single
+- id: activar_emparejamiento_zigbee
+  alias: Activar emparejamiento Zigbee
+  trigger:
+    platform: state
+    entity_id: input_boolean.zigbee_permit_join
+    to: 'on'
+  action:
+  - service: mqtt.publish
+    data:
+      topic: zigbee2mqtt/bridge/config/permit_join
+      payload: 'true'
+  - service: timer.start
+    data:
+      entity_id: timer.zigbee_permit_join
+- id: desactivar_emparejamiento_zigbee
+  alias: Desactivar emparejamiento Zigbee
+  trigger:
+  - entity_id: input_boolean.zigbee_permit_join
+    platform: state
+    to: 'off'
+  action:
+  - data:
+      payload: 'false'
+      topic: zigbee2mqtt/bridge/config/permit_join
+    service: mqtt.publish
+  - data:
+      entity_id: timer.zigbee_permit_join
+    service: timer.cancel
+- id: desactivar_emparejamiento_automaticamente
+  alias: Desactivar emparejamiento cuando acabe el tiempo
+  trigger:
+  - platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.zigbee_permit_join
+  action:
+  - service: mqtt.publish
+    data:
+      topic: zigbee2mqtt/bridge/config/permit_join
+      payload: 'false'
+  - service: input_boolean.turn_off
+    data:
+      entity_id: input_boolean.zigbee_permit_join

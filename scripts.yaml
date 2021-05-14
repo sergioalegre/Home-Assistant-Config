@@ -2,9 +2,10 @@ purgar_bbdd:
   alias: Purgar base de datos
   sequence:
   - data:
-      keep_days: '1'
-      repack: 'true'
+      keep_days: 31
+      repack: true
     service: recorder.purge
+  mode: single
 notify_test_email:
   alias: NotTest - Email
   sequence:
