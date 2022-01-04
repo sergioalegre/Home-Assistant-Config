@@ -1,3 +1,11 @@
+#https://github.com/uvejota/homeassistant-edata
+- platform: edata
+  username: !secret my_datadis_username
+  password: !secret my_datadis_password
+  cups: !secret my_cups
+
+
+
 #https://www.home-assistant.io/components/sensor.systemmonitor/
 - platform: systemmonitor
   resources:
@@ -138,23 +146,23 @@
 
 ###SHELLY EM
 #https://cyan-automation.medium.com/setting-up-power-and-energy-monitoring-with-a-shelly-em-and-home-assistant-492b5aa554f7
-- platform: template     
-  sensors:
-    energia_ayer:
-      # Use kWh, as that's the unit of the source
-      unit_of_measurement: kWh
-      icon_template: mdi:history
-      # Store yesterday's cumulative energy in a new variable
-      value_template: "{{ state_attr('sensor.daily_energy', 'last_period') }}"
+# - platform: template     
+#   sensors:
+#     energia_ayer:
+#       # Use kWh, as that's the unit of the source
+#       unit_of_measurement: kWh
+#       icon_template: mdi:history
+#       # Store yesterday's cumulative energy in a new variable
+#       value_template: "{{ state_attr('sensor.daily_energy', 'last_period') }}"
 
-- platform: template     
-  sensors:
-    energia_ayer_rest:
-      # Use kWh, as that's the unit of the source
-      unit_of_measurement: kWh
-      icon_template: mdi:history
-      # Store yesterday's cumulative energy in a new variable
-      value_template: "{{ state_attr('sensor.daily_energy_rest', 'last_period') }}"      
+# - platform: template     
+#   sensors:
+#     energia_ayer_rest:
+#       # Use kWh, as that's the unit of the source
+#       unit_of_measurement: kWh
+#       icon_template: mdi:history
+#       # Store yesterday's cumulative energy in a new variable
+#       value_template: "{{ state_attr('sensor.daily_energy_rest', 'last_period') }}"      
 
 #https://www.home-assistant.io/integrations/rest/
 #https://community.home-assistant.io/t/any-experience-with-utility-meter-functions/149904/2
@@ -166,7 +174,7 @@
 #   password: !secret shelly_pwd
 #   authentication: basic
   value_template: '{{ (value_json.emeters.0.power)}}'
-  scan_interval: 1 #1segundos
+  scan_interval: 5 #5segundos
   unit_of_measurement: W
   
 - platform: rest
@@ -208,19 +216,21 @@
   start: '{{ as_timestamp( now().replace(hour=0, minute=0, second=0) ) - now().weekday() * 86400 }}'
   end: '{{ now() }}'   
 
-- platform: history_stats
-  name:  calefaccion_activa_mes
-  entity_id:  sensor.calefaccion_activa
-  state: "heating"
-  type: time
-  end: '{{ now().replace(hour=0, minute=0, second=0) }}'
-  duration:
-    days: 30
+# - platform: history_stats
+#   name:  calefaccion_activa_mes
+#   entity_id:  sensor.calefaccion_activa
+#   state: "heating"
+#   type: time
+#   end: '{{ now().replace(hour=0, minute=0, second=0) }}'
+#   duration:
+#     days: 30
+
+
 
 #ESTADISTICAS USO PORTATIL
 - platform: history_stats
   name: portatil_activo_hoy
-  entity_id:  device_tracker.60_02_b4_49_c2_30
+  entity_id:  device_tracker.portatil
   state: "home"
   type: time
   start: '{{ now().replace(hour=0, minute=0, second=0) }}'
@@ -228,7 +238,7 @@
   
 - platform: history_stats
   name:  portatil_activo_ayer
-  entity_id:  device_tracker.60_02_b4_49_c2_30
+  entity_id:  device_tracker.portatil
   state: "home"
   type: time
   end: '{{ now().replace(hour=0, minute=0, second=0) }}'
@@ -237,25 +247,27 @@
 
 - platform: history_stats
   name:  portatil_activo_semana
-  entity_id:  device_tracker.60_02_b4_49_c2_30
+  entity_id:  device_tracker.portatil
   state: "home"
   type: time
   start: '{{ as_timestamp( now().replace(hour=0, minute=0, second=0) ) - now().weekday() * 86400 }}'
   end: '{{ now() }}' 
 
-- platform: history_stats
-  name:  portatil_activo_mes
-  entity_id:  device_tracker.60_02_b4_49_c2_30
-  state: "home"
-  type: time
-  end: '{{ now().replace(hour=0, minute=0, second=0) }}'
-  duration:
-    days: 30
-  
+# - platform: history_stats
+#   name:  portatil_activo_mes
+#   entity_id:  device_tracker.portatil
+#   state: "home"
+#   type: time
+#   end: '{{ now().replace(hour=0, minute=0, second=0) }}'
+#   duration:
+#     days: 30
+
+
+
 #ESTADISTICAS USO SOBREMESA
 - platform: history_stats
   name: pcsobremesa_activo_hoy
-  entity_id:  device_tracker.d8_50_e6_ba_ce_0f
+  entity_id:  device_tracker.sobremesa
   state: "home"
   type: time
   start: '{{ now().replace(hour=0, minute=0, second=0) }}'
@@ -263,7 +275,7 @@
   
 - platform: history_stats
   name:  pcsobremesa_activo_ayer
-  entity_id:  device_tracker.d8_50_e6_ba_ce_0f
+  entity_id:  device_tracker.sobremesa
   state: "home"
   type: time
   end: '{{ now().replace(hour=0, minute=0, second=0) }}'
@@ -272,34 +284,36 @@
 
 - platform: history_stats
   name:  pcsobremesa_activo_semana
-  entity_id:  device_tracker.d8_50_e6_ba_ce_0f
+  entity_id:  device_tracker.sobremesa
   state: "home"
   type: time
   start: '{{ as_timestamp( now().replace(hour=0, minute=0, second=0) ) - now().weekday() * 86400 }}'
   end: '{{ now() }}'
 
-- platform: history_stats
-  name:  pcsobremesa_activo_mes
-  entity_id:  device_tracker.d8_50_e6_ba_ce_0f
-  state: "home"
-  type: time
-  end: '{{ now().replace(hour=0, minute=0, second=0) }}'
-  duration:
-    days: 30
+# - platform: history_stats
+#   name:  pcsobremesa_activo_mes
+#   entity_id:  device_tracker.sobremesa
+#   state: "home"
+#   type: time
+#   end: '{{ now().replace(hour=0, minute=0, second=0) }}'
+#   duration:
+#     days: 30
+
+
 
 #ESTADISTICAS USO TV_SALON
 - platform: history_stats
   name: tv_salon_activo_hoy
-  entity_id: media_player.tv
-  state: "on"
+  entity_id: device_tracker.tv
+  state: "home"
   type: time
   start: '{{ now().replace(hour=0, minute=0, second=0) }}'
   end: '{{ now() }}'    
   
 - platform: history_stats
   name:  tv_salon_activo_ayer
-  entity_id: media_player.tv
-  state: "on"
+  entity_id: device_tracker.tv
+  state: "home"
   type: time
   end: '{{ now().replace(hour=0, minute=0, second=0) }}'
   duration:
@@ -307,20 +321,59 @@
 
 - platform: history_stats
   name:  tv_salon_activo_semana
-  entity_id: media_player.tv
-  state: "on"
+  entity_id: device_tracker.tv
+  state: "home"
   type: time
   start: '{{ as_timestamp( now().replace(hour=0, minute=0, second=0) ) - now().weekday() * 86400 }}'
   end: '{{ now() }}'
 
-- platform: history_stats
-  name:  tv_salon_activo_mes
-  entity_id: media_player.tv
-  state: "on"
-  type: time
-  end: '{{ now().replace(hour=0, minute=0, second=0) }}'
-  duration:
-    days: 30
+# - platform: history_stats
+#   name:  tv_salon_activo_mes
+#   entity_id: device_tracker.tv
+#   state: "home"
+#   type: time
+#   end: '{{ now().replace(hour=0, minute=0, second=0) }}'
+#   duration:
+#     days: 30
+
+
+
+#valvulas termostaticas
+- platform: template
+  sensors:
+    temperatura_radiador_bano:
+      value_template: '{{ states.climate.bano.attributes.current_temperature }}'
+      unit_of_measurement: 'ºC'
+- platform: template
+  sensors:
+    temperatura_radiador_dormitorio:
+      value_template: '{{ states.climate.dormitorio.attributes.current_temperature }}'
+      unit_of_measurement: 'ºC'
+- platform: template
+  sensors:
+    temperatura_radiador_habitacion:
+      value_template: '{{ states.climate.habitacion.attributes.current_temperature }}'
+      unit_of_measurement: 'ºC'
+- platform: template
+  sensors:
+    temperatura_radiador_pasillo:
+      value_template: '{{ states.climate.pasillo.attributes.current_temperature }}'
+      unit_of_measurement: 'ºC'
+- platform: template
+  sensors:
+    temperatura_radiador_cocina:
+      value_template: '{{ states.climate.cocina.attributes.current_temperature }}'
+      unit_of_measurement: 'ºC'
+- platform: template
+  sensors:
+    temperatura_radiador_salon:
+      value_template: '{{ states.climate.salon.attributes.current_temperature }}'
+      unit_of_measurement: 'ºC'
+- platform: template
+  sensors:
+    temperatura_radiador_salon_ventana:
+      value_template: '{{ states.climate.salon_ventana.attributes.current_temperature }}'
+      unit_of_measurement: 'ºC'      
 
 
 
@@ -329,3 +382,48 @@
   name: Estado del Coordinador
   state_topic: "zigbee2mqtt/bridge/state"
   icon: mdi:remote
+
+
+
+#https://github.com/dolezsa/thermal_comfort (es una integracion en HACS)
+# - platform: thermal_comfort
+#   sensors:
+#     salon:
+#       temperature_sensor: sensor.temperatura_salon
+#       humidity_sensor: sensor.humedad_salon
+#     dormitorio:
+#       temperature_sensor: sensor.temperatura_dormitorio
+#       humidity_sensor: sensor.humedad_dormitorio
+#       sensor_types:
+#         - absolutehumidity
+#         - heatindex
+#         - perception
+  
+  
+  #https://github.com/PepegaBruh/CryptoTracker
+# - platform: cryptostate
+#   resources:
+#     - compare: doge-eur
+#       name: dogecoin
+#     - compare: btc-eur
+#       name: bitcoin
+#     - compare: eth-eur
+#       name: ethereum
+#     - compare: keep-eur
+#       name: keep
+#     - compare: ada-eur
+#       name: cardano
+#     - compare: amp-eur
+#       name: ampere
+#     - compare: fet-eur
+#       name: fet
+#     - compare: clv-eur
+#       name: clv
+#     - compare: grt-eur
+#       name: grt
+#     - compare: xlm-eur
+#       name: xlm
+#     - compare: comp-eur
+#       name: comp
+#     - compare: matic-eur
+#       name: matic      

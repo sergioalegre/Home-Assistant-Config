@@ -3,8 +3,8 @@
   platform: group
   services:
     - service: telegram
-    - service: kodi    
-    - service: webostv
+    - service: kodi
+    - service: andoid
 
 
 #https://www.home-assistant.io/components/notify.telegram/
@@ -20,12 +20,11 @@
   username: !secret kodi_username
   password: !secret kodi_password
 
-
-
-#https://www.home-assistant.io/components/notify.webostv/
-- platform: webostv
+- platform: kodi
+  name: android
   host: 192.168.0.99
-  name: tv_salon
+  port: 8080
+
 
 
 #https://www.home-assistant.io/integrations/html5/
@@ -35,6 +34,7 @@
   vapid_pub_key: !secret html5_vapid_pub_key
   vapid_prv_key: !secret html5_vapid_prv_key
   vapid_email: !secret email
+
 
 
 #https://www.home-assistant.io/components/notify.smtp/

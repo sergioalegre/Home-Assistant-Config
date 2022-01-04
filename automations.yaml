@@ -11,7 +11,7 @@
       message: Panel de Control
       data:
         inline_keyboard:
-        - Temperatura:/opcion1, Luces:/opcion2, Persianas:/opcion3
+        - Temperatura:/opcion1, Luces:/opcion2, Persianas:/opcion3, Radiadores:/opcion4
   id: 9eabc85673184adb9f357b00b9b975a1
 - alias: Telebot cancel
   trigger:
@@ -25,7 +25,7 @@
       message: Panel de Control
       data:
         inline_keyboard:
-        - Temperatura:/opcion1, Luces:/opcion2, Persianas:/opcion3
+        - Temperatura:/opcion1, Luces:/opcion2, Persianas:/opcion3, Radiadores:/opcion4
   id: 1973c83d89e6482586b36938826de505
 - alias: Telebot Temperatura
   trigger:
@@ -41,8 +41,9 @@
   - service: notify.telegram
     data_template:
       title: Temperatura
-      message: Tº Salón {{ states('sensor.temperature_158d0002d45792') }} , Tº Dormitorio
-        {{ states('sensor.temperature_158d0002e98e60') }}
+      message: Tº Salón {{ states('sensor.temperature_158d0002d45792') }} Tº Dormitorio
+        {{ states('sensor.temperature_158d0002e98e60') }} Tº Cocina {{ states('sensor.calefaccion_temperatura')
+        }}
       data:
         inline_keyboard:
         - Atras:/cancel
@@ -82,28 +83,48 @@
   - service: notify.telegram
     data_template:
       title: Persianas
-      message: '{% if is_state("cover.persiana1", "open") %} Persiana1 subida {% else
-        %} Persiana1 bajada {% endif %} {% if is_state("cover.persiana2", "open")
-        %} Persiana2 subida {% else %} Persiana2 bajada {% endif %} {% if is_state("cover.persiana3",
-        "open") %} Persiana3 subida {% else %} Persiana3 bajada {% endif %}'
+      message: '{% if is_state("cover.shelly_shsw_25_40f520001121", "open") %} Persiana1
+        subida {% else %} Persiana1 bajada {% endif %} {% if is_state("cover.shelly_shsw_25_40f52000bceb",
+        "open") %} Persiana2 subida {% else %} Persiana2 bajada {% endif %} {% if
+        is_state("cover.shelly_shsw_25_40f520005f30", "open") %} Persiana3 subida
+        {% else %} Persiana3 bajada {% endif %} {% if is_state("cover.shelly_shsw_25_3c6105e43a4a",
+        "open") %} Persiana4 subida {% else %} Persiana4 bajada {% endif %} {% if
+        is_state("cover.shelly_shsw_25_3c6105e33608", "open") %} Persiana5 subida
+        {% else %} Persiana5 bajada {% endif %}'
       data:
         inline_keyboard:
         - Atras:/cancel
   id: ec9b6f2764e74a519d0e60804258ec26
-- alias: Actualizar Fuelio 22:05h
+- alias: Telebot Radiadores
   trigger:
-    at: '22:05'
+  - platform: event
+    event_type: telegram_callback
+    event_data:
+      data: /opcion4
+  action:
+  - service: telegram_bot.answer_callback_query
+    data_template:
+      callback_query_id: '{{ trigger.event.data.id }}'
+      message: Radiadores
+  - service: notify.telegram
+    data_template:
+      title: Radiadores
+      message: ' Salón {{ states(''sensor.temperatura_radiador_salon'') }} Salón Ventana
+        {{ states(''sensor.temperatura_radiador_salon_ventana'') }} Baño {{ states(''sensor.temperatura_radiador_bano'')
+        }} Pasillo {{ states(''sensor.temperatura_radiador_pasillo'') }} Cocina {{
+        states(''sensor.temperatura_radiador_cocina'') }} Habitación {{ states(''sensor.temperatura_radiador_habitacion'')
+        }} Dormitorio {{ states(''sensor.temperatura_radiador_dormitorio'') }}'
+      data:
+        inline_keyboard:
+        - Atras:/cancel
+  id: 4bee251dca7f4432b166ca0c511d192d
+- id: f9683cc139c7416fb3453a22f6ae580e
+  alias: 22:05 actualizar Fuelio
+  trigger:
+  - at: '22:05:00'
     platform: time
   action:
-    service: shell_command.actualizar_fuelio
-  id: f9683cc139c7416fb3453a22f6ae580e
-- alias: Actualizar PiHole 22:10h
-  trigger:
-    at: '22:10'
-    platform: time
-  action:
-    service: shell_command.actualizar_pihole
-  id: 2d47a51acabd4ae0b098aa4ab229fff3
+  - service: shell_command.actualizar_fuelio
 - id: b86408b7ce8a4fb7a0db031ca1a3e770
   alias: Movimiento pasillo + oscuro = enciende GW
   trigger:
@@ -111,14 +132,10 @@
     entity_id: binary_sensor.movimiento_mi
     from: 'off'
     to: 'on'
-  - platform: state
-    entity_id: sensor.luminosidad_gateway
-    from: '0'
-    to: '100'
   condition:
-  - condition: sun
-    before: sunrise
-    after: sunset
+  - condition: time
+    after: '19:00:00'
+    before: 07:00:00
   action:
   - service: light.turn_on
     data:
@@ -136,13 +153,10 @@
     entity_id: binary_sensor.movimiento_aqara
     from: 'off'
     to: 'on'
-  - platform: state
-    entity_id: sensor.luminosidad_gateway
-    to: '100'
   condition:
-  - condition: sun
-    before: sunrise
-    after: sunset
+  - condition: time
+    after: '19:00:00'
+    before: 07:00:00
   action:
   - service: light.turn_on
     data:
@@ -235,7 +249,7 @@
       message: Sergio se ha ido
   id: ea401b57fc6140668868ecc7cd12d631
 - id: 29fbbc4d474a4117bb7877d8f44497b0
-  alias: a 15º caliento dormitorio
+  alias: 02:00 a 15º caliento dormitorio
   trigger:
   - platform: time_pattern
     minutes: /15
@@ -245,7 +259,7 @@
     below: '15'
     above: '10'
   - condition: time
-    after: '22:30:00'
+    after: 02:00:00
     before: 06:00:00
   action:
   - service: notify.todos
@@ -270,7 +284,7 @@
     entity_id: automation.a_21o_no_sigo_calentando_dormitorio
   mode: single
 - id: f80ad94736c944f783d5115316ec3bb2
-  alias: a 15.5º no sigo calentando dormitorio
+  alias: 02:15 a 15.5º no sigo calentando dormitorio
   trigger:
   - platform: time_pattern
     minutes: /15
@@ -279,7 +293,7 @@
     entity_id: sensor.temperatura_dormitorio
     above: '15.5'
   - condition: time
-    after: '22:30:00'
+    after: 02:15:00
     before: 06:00:00
   action:
   - service: notify.todos
@@ -303,7 +317,7 @@
       battery_entity: sensor.bateria_movimiento_aqara
       message: Batería de {{ entity_name }} al {{ battery_level }}%
 - id: '1609245391620'
-  alias: 17pm Apagar Webmin y VPN
+  alias: 17:00 apagar Webmin y VPN
   description: ''
   trigger:
   - platform: time
@@ -375,14 +389,14 @@
   description: ''
   trigger:
   - platform: time_pattern
-    hours: /1
+    minutes: /15
   condition:
   - condition: state
     entity_id: switch.disco_externo
     state: 'on'
   - condition: state
-    entity_id: media_player.tv
-    state: 'off'
+    entity_id: device_tracker.tv
+    state: not_home
   action:
   - service: switch.turn_off
     data: {}
@@ -409,19 +423,19 @@
   action:
   - service: cover.open_cover
     data: {}
-    entity_id: cover.shelly_shsw_25_40f520001121
-  - service: cover.open_cover
-    data: {}
-    entity_id: cover.shelly_shsw_25_40f52000bceb
-  - service: cover.open_cover
-    data: {}
-    entity_id: cover.shelly_shsw_25_40f520005f30
+    target:
+      entity_id:
+      - cover.shelly_shsw_25_40f520001121
+      - cover.shelly_shsw_25_40f52000bceb
+      - cover.shelly_shsw_25_40f520005f30
+      - cover.shelly_shsw_25_3c6105e43a4a
+      - cover.shelly_shsw_25_3c6105e33608
   - service: notify.todos
     data:
-      message: 10AM y hace  -> Subo persianas
+      message: 10AM y hace  bueno -> Subo persianas
   mode: single
 - id: '1610884133558'
-  alias: 06:00 apagar calefacción
+  alias: 06:00 apagar Termostato
   description: ''
   trigger:
   - platform: time
@@ -448,7 +462,7 @@
       message: ALERTA T° pi > 70°"
   mode: single
 - id: '1613402028754'
-  alias: 02:00 Purgar BBDD
+  alias: 02:00 purgar BBDD
   description: ''
   trigger: []
   condition: []
@@ -503,3 +517,27 @@
   - service: input_boolean.turn_off
     data:
       entity_id: input_boolean.zigbee_permit_join
+- id: '1636393829757'
+  alias: '01:55 encender Termostato '
+  description: ''
+  trigger:
+  - platform: time
+    at: 01:55:00
+  condition: []
+  action:
+  - service: climate.turn_on
+    target:
+      entity_id: climate.termostato_casa
+  mode: single
+- id: '1636395980705'
+  alias: Iniciar filebrowser en el inicio
+  description: ''
+  trigger:
+  - platform: homeassistant
+    event: start
+  condition: []
+  action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.filebrowser
+  mode: single

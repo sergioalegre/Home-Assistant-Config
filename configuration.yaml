@@ -18,28 +18,30 @@ homeassistant:
 
 # https://www.home-assistant.io/integrations/recorder
 recorder:
+  #purge_keep_days: 8
+  #db_url: sqlite:////media/home-assistant_v2.db
   exclude:
     entities:
-      #- sensor.shelly_em_energia_actual_rest
       - sensor.processor_use
       - sensor.memory_use_percent
       - sensor.cpu_temperature
       - sensor.shelly_shem_c7ec27_1_current_consumption
       - sun.sun
+      #nuevos
+      - media_player.tv_salon
+      - media_player.android
+      - device_tracker.sagemcom_broadband_sas_77_ba_ec #router
 
 
 
 #https://www.home-assistant.io/components/shell_command/
 shell_command:
   actualizar_fuelio: !secret actualizar_fuelio
-  actualizar_pihole: >
-    ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo docker exec pihole pihole -g"
 
 
 
 #https://www.home-assistant.io/components/http/
 http:
-# base_url: !secret base_url
  ssl_certificate: /ssl/fullchain.pem
  ssl_key: /ssl/privkey.pem
 
@@ -49,22 +51,6 @@ sensor: !include sensor.yaml
 input_boolean: !include input_boolean.yaml
 timer: !include timer.yaml
 notify: !include notify.yaml
-
-
-
-#https://www.home-assistant.io/integrations/webostv
-webostv:
-  host: 192.168.0.99
-  name: tv_salon
-
-
-
-#https://www.home-assistant.io/integrations/kodi
-media_player:
-  - platform: kodi
-    host: 192.168.0.2
-    username: !secret kodi_username
-    password: !secret kodi_password
 
 
 
@@ -93,8 +79,17 @@ switch:
       command_off: >
         ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo systemctl stop kodi"
       command_state: >
-        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo systemctl status kodi --full | grep -oc 'Active: active (running)'"
-      value_template: '{{ value == "1" }}'
+        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo systemctl is-active kodi"
+      value_template: '{{ value == "active" }}'
+
+     filebrowser:
+      command_on: >
+        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo filebrowser -a 192.168.0.2 -p 8888 -r /"
+      command_off: >
+        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo pkill filebrowser"
+      command_state: >
+        nc -z 192.168.0.2 8888; echo $?
+      value_template: '{{ value == "0" }}'
 
      webmin:
       command_on: >
@@ -102,17 +97,8 @@ switch:
       command_off: >
         ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo systemctl stop webmin"
       command_state: >
-        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "systemctl status webmin --full | grep -oc 'Active: active (running)'"
-      value_template: '{{ value == "1" }}'
-
-     pihole:
-      command_on: >
-        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo docker start pihole"
-      command_off: >
-        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo docker stop pihole"
-      command_state: >
-        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo docker ps | grep pihole | wc -l"
-      value_template: '{{ value == "1" }}'
+        ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo systemctl is-active webmin"
+      value_template: '{{ value == "active" }}'
 
      wireguard:
       command_on: >
@@ -140,12 +126,6 @@ switch:
         command_on: >
          ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo poweroff"
 
-     encender_television:
-        command_on: >
-         ssh -i id_rsa -o StrictHostKeyChecking=no pi@192.168.0.2 "sudo echo 'on 0' | cec-client -s"
-
-
-
   #TERMOSTATO este switch es necesario para que funcione fluoreon
   - platform: floureon
     name: Termostato_Casa
@@ -167,12 +147,6 @@ climate:
 
 
 
-#https://www.home-assistant.io/components/ifttt/
-# ifttt:
-#   key: !secret ifttt_key
-
-
-
 #https://www.home-assistant.io/integrations/yeelight
 discovery:
   ignore:
@@ -186,21 +160,9 @@ yeelight:
 
 #https://www.home-assistant.io/integrations/xiaomi_aqara/
 xiaomi_aqara:
-  discovery_retry: 3
+  discovery_retry: 2
   gateways:
     - key: !secret xiaomi_aqara_key
-
-
-
-#https://www.youtube.com/watch?v=rKIHoqxxMek&list=PLst9mKBGfYJdcLU0MG3BEl7b00KC9f13a&index=3&t=511s
-influxdb:
-  host: a0d7b954-influxdb
-  port: 8086
-  database: homeassistant
-  username:  !secret influx
-  password: !secret influx
-  max_retries: 3
-  default_measurement: state
 
 
 
@@ -223,17 +185,7 @@ utility_meter:
     cycle: daily
   monthly_energy_rest:
     source: sensor.shelly_em_energia_total_rest
-    cycle: monthly    
-
-
-
-#https://www.home-assistant.io/integrations/nmap_tracker
-device_tracker:
-  - platform: nmap_tracker
-    hosts:
-      - 192.168.0.3 #sobremesa
-      - 192.168.0.4 #portatil
-    home_interval: 60 #escanea cada minuto la red
+    cycle: monthly
 
 
 
@@ -241,13 +193,6 @@ device_tracker:
 tts:
   - platform: google_translate
     language: 'es'
-
-
-
-#https://www.home-assistant.io/integrations/calendar.google#prerequisites
-# google:
-#   client_id: !secret google_client_id
-#   client_secret: !secret google_client_secret
 
 
 
@@ -288,6 +233,10 @@ google_assistant:
         expose: false
     cover.shelly_shsw_25_40f520005f30:
         expose: false
+    cover.shelly_shsw_25_3c6105e43a4a:
+        expose: false
+    cover.shelly_shsw_25_3c6105e33608:
+        expose: false
     binary_sensor.puerta_trastero:
         expose: false
     media_player.tv:
@@ -295,9 +244,59 @@ google_assistant:
     switch.encender_television:
         name: television
     switch.wireguard:
-        name: VPN        
+        name: VPN
+    automation.tv_off_y_usb_on_usb_off:
+        expose: false
+
+
 
 group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+
+
+
+#https://www.youtube.com/watch?v=rKIHoqxxMek&list=PLst9mKBGfYJdcLU0MG3BEl7b00KC9f13a&index=3&t=511s
+# influxdb:
+#   host: a0d7b954-influxdb
+#   port: 8086
+#   database: homeassistant
+#   username:  !secret influx
+#   password: !secret influx
+#   max_retries: 3
+#   default_measurement: state
+
+
+
+#DOODS https://www.youtube.com/watch?v=27D5ue5jcBo&list=PLDp1j6OBvIqbrCfu8_RbvMCLJM8E5G7x2&index=2
+# image_processing:
+#   - platform: doods
+#     scan_interval: 30
+#     url: "http://172.30.33.4:18080"
+#     timeout: 60
+#     detector: default
+#     source:
+#       - entity_id: camera.camara_salon
+#     file_out:
+#       - "/media/{{ camera_entity.split('.')[1] }}_latest.jpg"
+#       - "/media/{{ camera_entity.split('.')[1] }}_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg"
+#     confidence: 65
+#     labels:
+#       - name: person
+#         confidence: 60
+#       - name: cell phone
+#         confidence: 65
+
+
+
+#https://www.home-assistant.io/components/ifttt/
+# ifttt:
+#   key: !secret ifttt_key
+
+
+#https://www.home-assistant.io/integrations/calendar.google#prerequisites
+#ojo revoke el acceso de google calendar
+# google:
+#   client_id: !secret google_client_id
+#   client_secret: !secret google_client_secret
